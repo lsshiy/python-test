@@ -1,0 +1,524 @@
+wChecker、録開認、起開。
+:
+
+MainControllerswitch_to_next_window()。
+ScrollController、要開。
+設:
+
+設、ConfigHandlersave_config()、JSON。
+、設計。装、関詳装関追要。
+
+
+
+
+
+
+:
+進
+ChatGPT:
+ChatGPT
+、要。、見。
+
+
+1. MainController
+python
+
+class MainController:
+    def __init__(self):
+        self.entries = []
+        self.current_index = 0
+        self.entry_manager = EntryManager()
+        self.window_checker = WindowChecker()
+        self.scroll_controller = ScrollController()
+        self.config_handler = ConfigHandler()
+
+    def load_entries(self):
+        self.entries = self.config_handler.load_config("config.json")
+    
+    def save_entries(self):
+        self.config_handler.save_config("config.json", self.entries)
+    
+    def switch_to_next_window(self):
+        current_entry = self.entries[self.current_index]
+        self.window_checker.verify_all_windows(self.entries)
+        
+        # Switch to the next window and start scrolling if needed
+        self.window_checker.activate_window(current_entry)
+        if current_entry["scroll_enabled"]:
+            self.scroll_controller.enable_scroll(current_entry)
+        
+        # Move to the next entry
+        self.current_index = (self.current_index + 1) % len(self.entries)
+
+    def start_scroll(self, entry):
+        if entry["scroll_enabled"]:
+            self.scroll_controller.enable_scroll(entry)
+2. EntryManager
+python
+
+class EntryManager:
+    def __init__(self):
+        self.entries = []
+    
+    def add_entry(self, entry):
+        self.entries.append(entry)
+    
+    def edit_entry(self, entry_id, new_data):
+        for entry in self.entries:
+            if entry["id"] == entry_id:
+                entry.update(new_data)
+                break
+    
+    def delete_entry(self, entry_id):
+        self.entries = [entry for entry in self.entries if entry["id"] != entry_id]
+    
+    def get_entries(self):
+        return self.entries
+3. WindowChecker
+python
+
+import os
+
+class WindowChecker:
+    def is_window_open(self, entry):
+        # Check if the window with the specified title is open
+        return "Check if window with title exists"
+
+    def launch_window(self, entry):
+        # Open the application with the specified file or URL
+        os.startfile(entry["file_path"])
+
+    def verify_all_windows(self, entries):
+        for entry in entries:
+            if not self.is_window_open(entry):
+                self.launch_window(entry)
+
+    def activate_window(self, entry):
+        # Bring the specified window to the front
+        print(f"Activating window for {entry['file_path']}")
+4. ScrollController
+python
+
+class ScrollController:
+    def enable_scroll(self, entry):
+        # Start automatic scrolling for the specified entry
+        print(f"Enabling scroll for {entry['file_path']} with speed {entry['scroll_speed']}")
+
+    def set_scroll_speed(self, speed):
+        # Set the scroll speed
+        self.scroll_speed = speed
+    
+    def stop_scroll(self, entry):
+        # Stop scrolling for the specified entry
+        print(f"Stopping scroll for {entry['file_path']}")
+5. ConfigHandler
+python
+
+import json
+
+class ConfigHandler:
+    def load_config(self, file_path):
+        with open(file_path, "r") as file:
+            return json.load(file)
+    
+    def save_config(self, file_path, entries):
+        with open(file_path, "w") as file:
+            json.dump(entries, file, indent=4)
+
+python
+
+controller = MainController()
+controller.load_entries()
+
+while True:
+    controller.switch_to_next_window()
+    time.sleep(controller.entries[controller.current_index]["display_time"])
+要調。
+
+
+
+
+
+
+:
+進
+ChatGPT:
+ChatGPT
+、際装造重要詳。、装術題、、。
+
+1. 装
+1.1. （設読込）
+設（JSONXML）、設起。。
+
+設、起設。
+設、 save_config() 。
+設（、）行。
+1.2. 認起
+開認際、win32gui 際表。Windows視 psutil  subprocess 。
+起際、見通、認。
+1.3. 
+際、Web自Excel、部。関討。
+
+Web: Selenium  PyAutoGUI 、行。
+Excel: pywin32 、Excel、行。
+1.4. 
+（読込、起、）、表、適試行行。
+2. 
+2.1. 
+WindowChecker: is_window_open()  launch_window() 、開、開認。
+ConfigHandler: 設、読込。
+ScrollController: 際、速設通認。
+2.2. 
+、。
+2.3. GUI
+GUI部、通認。
+3. 術題
+3.1. 行
+間、非討。、UI、行。
+
+3.2. 複
+複、複雑。解、追跡重要。
+
+3.3. 間
+（: Excel）行、防、要。
+
+4. 
+装: 記設計、際。
+: 、認行。
+: 認。
+進階、詳要。
+
+
+
+
+
+
+:
+進
+ChatGPT:
+ChatGPT
+進、装詳説。、装、要部、設触。
+
+1. 要部
+1.1. 須
+際、。
+
+psutil: 認。
+
+: pip install psutil
+: psutil.process_iter() 行、開認。
+win32gui: 。
+
+: pip install pywin32
+: win32gui.EnumWindows() 開、認。
+pyautogui: 自。。
+
+: pip install pyautogui
+: pyautogui.scroll() 行。
+selenium: Web自（）。
+
+: pip install selenium
+: Selenium WebDriver自。
+pywin32: ExcelWindows。
+
+: pip install pywin32
+: win32com.client.Dispatch() Excel、行。
+1.2. 開設
+Python: Python 3.8
+: Visual Studio Code（VSCode）PyCharm
+: venv関。
+: python -m venv myenv
+起: myenv\Scripts\activate
+要: pip install psutil pywin32 pyautogui selenium
+2. 装
+2.1. 設読込
+設（JSON）読込。設設適。
+
+python
+
+import json
+
+class ConfigHandler:
+    def load_config(self, file_path):
+        try:
+            with open(file_path, "r") as file:
+                return json.load(file)
+        except FileNotFoundError:
+            return []  # 設返
+    
+    def save_config(self, file_path, entries):
+        with open(file_path, "w") as file:
+            json.dump(entries, file, indent=4)
+2.2. 認起
+開認、開起。psutil認、win32gui。
+
+python
+
+import psutil
+import os
+
+class WindowChecker:
+    def is_window_open(self, entry):
+        for proc in psutil.process_iter(['pid', 'name']):
+            if entry["app_name"].lower() in proc.info['name'].lower():
+                return True
+        return False
+    
+    def launch_window(self, entry):
+        os.startfile(entry["file_path"])
+    
+    def verify_all_windows(self, entries):
+        for entry in entries:
+            if not self.is_window_open(entry):
+                print(f"Launching {entry['app_name']}...")
+                self.launch_window(entry)
+2.3. 
+装。 win32gui 。
+
+python
+
+import win32gui
+
+class WindowChecker:
+    def activate_window(self, entry):
+        def enum_callback(hwnd, lParam):
+            if win32gui.GetWindowText(hwnd) == entry["window_title"]:
+                win32gui.SetForegroundWindow(hwnd)
+        
+        win32gui.EnumWindows(enum_callback, None)
+2.4. 
+Excel行追。Selenium、pyautogui行。
+
+python
+
+import pyautogui
+from selenium import webdriver
+
+class ScrollController:
+    def enable_scroll(self, entry):
+        if entry["type"] == "web":
+            # Selenium
+            driver = webdriver.Chrome()
+            driver.get(entry["file_path"])
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        elif entry["type"] == "excel":
+            # Excel行
+            # Excel（pywin32）
+            pass
+        else:
+            # 般
+            pyautogui.scroll(10)  # 
+2.5. 行
+MainController 、設読込、、順行。
+
+python
+
+import time
+
+class MainController:
+    def __init__(self):
+        self.entries = []
+        self.current_index = 0
+        self.entry_manager = EntryManager()
+        self.window_checker = WindowChecker()
+        self.scroll_controller = ScrollController()
+        self.config_handler = ConfigHandler()
+
+    def load_entries(self):
+        self.entries = self.config_handler.load_config("config.json")
+    
+    def save_entries(self):
+        self.config_handler.save_config("config.json", self.entries)
+    
+    def switch_to_next_window(self):
+        current_entry = self.entries[self.current_index]
+        self.window_checker.verify_all_windows(self.entries)
+        
+        # 
+        self.window_checker.activate_window(current_entry)
+        if current_entry["scroll_enabled"]:
+            self.scroll_controller.enable_scroll(current_entry)
+        
+        # 
+        self.current_index = (self.current_index + 1) % len(self.entries)
+
+    def start(self):
+        while True:
+            self.switch_to_next_window()
+            time.sleep(self.entries[self.current_index]["display_time"])
+3. 行
+設読込: 起config.json設読込。
+認: WindowChecker開認、開起。
+: MainController順、要ScrollController開。
+設: 設config.json。
+、際、認行。部関。
+
+
+
+
+
+
+:
+進
+
+2/3
+
+ChatGPT:
+ChatGPT
+進、、、調行。階、装、設読込、行認。
+
+1. 順
+1.1. 
+、通認。
+
+1.1.1. 設読込
+ConfigHandler読込認。
+
+python
+
+def test_config_handler():
+    config_handler = ConfigHandler()
+    
+    # 設読込
+    config = config_handler.load_config("test_config.json")
+    assert isinstance(config, list), "Config should be a list"
+    
+    # 設追
+    config.append({"file_path": "test.txt", "app_name": "Notepad"})
+    config_handler.save_config("test_config.json", config)
+    
+    # 設認
+    loaded_config = config_handler.load_config("test_config.json")
+    assert len(loaded_config) == 1, "Config should contain one entry"
+    assert loaded_config[0]["file_path"] == "test.txt", "File path mismatch"
+1.1.2. 認起
+WindowCheckeris_window_open()launch_window()認。
+
+python
+
+def test_window_checker():
+    window_checker = WindowChecker()
+    
+    # （際適設）
+    entry = {"file_path": "test.txt", "app_name": "Notepad", "window_title": "Notepad"}
+    
+    # 開
+    assert not window_checker.is_window_open(entry), "Window should not be open"
+    
+    # 起
+    window_checker.launch_window(entry)
+    
+    # 認
+    assert window_checker.is_window_open(entry), "Window should now be open"
+1.1.3. 
+ScrollControllerWebExcel認。
+
+python
+
+def test_scroll_controller():
+    scroll_controller = ScrollController()
+    
+    # Web試
+    web_entry = {"file_path": "https://www.example.com", "type": "web", "scroll_enabled": True}
+    scroll_controller.enable_scroll(web_entry)
+    
+    # Excel試
+    excel_entry = {"file_path": "test.xlsx", "type": "excel", "scroll_enabled": True}
+    scroll_controller.enable_scroll(excel_entry)
+1.2. 
+通認。
+
+1.2.1. 
+python
+
+def test_main_controller():
+    main_controller = MainController()
+    main_controller.load_entries()
+    
+    # 
+    main_controller.switch_to_next_window()
+    
+    # 間過認
+    time.sleep(2)  # 間
+    current_entry = main_controller.entries[main_controller.current_index]
+    assert current_entry["window_title"] == "Notepad", "Expected Notepad to be active"
+    
+    # 行認
+    if current_entry["scroll_enabled"]:
+        assert current_entry["file_path"] in current_entry["window_title"], "Scroll should be performed"
+2. 
+装題、説。
+
+2.1. 追
+重要（認起、行）追、。
+
+python
+
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
+class WindowChecker:
+    def launch_window(self, entry):
+        logging.info(f"Launching window for {entry['app_name']}...")
+        try:
+            os.startfile(entry["file_path"])
+            logging.info(f"Window {entry['window_title']} launched successfully.")
+        except Exception as e:
+            logging.error(f"Failed to launch {entry['app_name']}: {e}")
+2.2. 
+適表、。
+
+python
+
+try:
+    window_checker.launch_window(entry)
+except Exception as e:
+    print(f"Error: {e}. Please check the file path and application name.")
+2.3. 認
+逐認、調。順、行。
+
+3. 調
+3.1. （GUI）適
+GUI、調。
+、速調。
+3.2. 適
+見、遅適。
+複際認、要非。
+3.3. 設
+設（JSON）、要限設。
+4. 認
+認: 、認。
+: 装、。
+: 設、設。
+、行調認。
+
+
+
+
+
+
+:
+解説
+
+    def activate_window(self, entry):
+        def enum_callback(hwnd, lParam):
+            if win32gui.GetWindowText(hwnd) == entry["window_title"]:
+                win32gui.SetForegroundWindow(hwnd)
+        
+        win32gui.EnumWindows(enum_callback, None)
+ChatGPT:
+ChatGPT
+、致。、win32gui、Windows、面表行。
+
+解説
+1. activate_window(self, entry)
+activate_window 、entry （、）、象。
+
+entry 、 (window_title) 。
+2. enum_callback(hwnd, lParam)
+enum_callback 、EnumWindows 関関。関、。
+
+hwnd (window handle): 、。、Windows識識。
+lParam: 通、関追、 None 。
+関、win32gui.EnumWind

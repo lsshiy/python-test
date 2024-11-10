@@ -1,0 +1,10 @@
+[
+    {
+        "file_path": "test.txt",
+        "app_name": "sakura.exe",
+        "window_title": "test.txt",
+        "display_time": 10,
+        "scroll_enabled": true,
+        "type": "text"
+    }
+]
