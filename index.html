@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100行5列のグリッド</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>100行5列のシンプルなグリッド</h1>
+
+    <table id="grid"></table>
+
+    <script>
+        // NATOフォネティックコードのリスト
+        const natoPhoneticCodes = [
+            "Alfa", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel",
+            "India", "Juliett", "Kilo", "Lima", "Mike", "November", "Oscar", "Papa",
+            "Quebec", "Romeo", "Sierra", "Tango", "Uniform", "Victor", "Whiskey", "X-ray",
+            "Yankee", "Zulu"
+        ];
+
+        // ランダムにNATOフォネティックコードを1つ選ぶ関数
+        function getRandomNatoCode() {
+            const randomIndex = Math.floor(Math.random() * natoPhoneticCodes.length);
+            return natoPhoneticCodes[randomIndex];
+        }
+
+        const gridContainer = document.getElementById('grid');
+
+        // 100行5列のテーブルを作成
+        for (let row = 0; row < 100; row++) {
+            const tableRow = document.createElement('tr');
+            for (let col = 0; col < 5; col++) {
+                const tableCell = document.createElement('td');
+                tableCell.textContent = getRandomNatoCode();
+                tableRow.appendChild(tableCell);
+            }
+            gridContainer.appendChild(tableRow);
+        }
+    </script>
+
+</body>
+</html>
