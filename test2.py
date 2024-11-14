@@ -28,12 +28,12 @@ class CalendarApp:
         prev_button.grid(row=0, column=0, padx=5, pady=5)
 
         # 月と年のラベル
-        self.month_label = ctk.CTkLabel(header_frame, text="", font=("Helvetica", 16))
+        self.month_label = ctk.CTkLabel(header_frame, text="", font=("Meiryo", 16))
         self.month_label.grid(row=0, column=1, columnspan=5, padx=20)
         
         # 次月ボタン
         next_button = ctk.CTkButton(header_frame, text=">", command=self.next_month)
-        next_button.grid(row=0, column=6, padx=5, pady=5)
+        next_button.grid(row=0, column=7, padx=5, pady=5)
 
         # 初期ラベルの設定
         self.update_month_label()
@@ -42,7 +42,7 @@ class CalendarApp:
         # カレンダーの日付部分を表示
         days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
         for col, day in enumerate(days):
-            ctk.CTkLabel(self.root, text=day, font=("Helvetica", 12, "bold")).grid(row=1, column=col, padx=5, pady=5)
+            ctk.CTkLabel(self.root, text=day, font=("Meiryo", 12, "bold")).grid(row=1, column=col, padx=5, pady=5)
 
         # 各列と行のweightを設定（動的リサイズ対応）
         for i in range(7):
@@ -81,11 +81,12 @@ class CalendarApp:
 
     def display_day(self, day, row, col):
         date_str = f"{self.current_year}-{self.current_month:02}-{day:02}"
-        day_frame = ctk.CTkFrame(self.root, corner_radius=8, border_width=1)
+        day_frame = ctk.CTkFrame(self.root, corner_radius=0, border_width=0)
         day_frame.grid(row=row, column=col, padx=2, pady=2, sticky="nsew")
+        day_frame.grid_propagate(False)  # サイズの自動調整を無効化
 
         # 日付ラベル
-        day_label = ctk.CTkLabel(day_frame, text=str(day), font=("Helvetica", 10, "bold"))
+        day_label = ctk.CTkLabel(day_frame, text=str(day), font=("Meiryo", 13, "bold"))
         day_label.grid(row=0, column=0, sticky="nw", padx=5, pady=5)
 
         # 予定アイテムを表示
@@ -98,7 +99,7 @@ class CalendarApp:
         event_frame.grid(row=row, column=0, padx=3, pady=2, sticky="nw")
 
         # イベントテキスト
-        event_label = ctk.CTkLabel(event_frame, text=event_text, font=("Helvetica", 8), anchor="w")
+        event_label = ctk.CTkLabel(event_frame, text=event_text, font=("Meiryo", 10), anchor="w")
         event_label.pack(fill="both", expand=True, padx=5, pady=2)
 
     def update_month_label(self):
