@@ -17,6 +17,14 @@ async def main():
         while True:
             data = await reader.read(100)
             print(data)
+
+            # 生バイトデータを取得
+            raw_data = await reader.read(100).encode('raw_unicode_escape')
+            
+            print(f"Raw Data: {raw_data}")
+
+            # エンコーディングを確認
+            print(f"現在のエンコーディング: {reader.encoding}")
     except Exception as e:
         print(f"エラーが発生しました: {e}")
 

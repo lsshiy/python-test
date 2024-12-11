@@ -8,6 +8,7 @@ class CP930Decoder(codecs.Codec):
         self.current_decoder = self.cp290  # 初期状態はCP290
 
     def decode(self, input, errors='strict'):
+        print(f"Decoding input: {input}")
         output = []
         i = 0
         while i < len(input):
@@ -33,8 +34,3 @@ def cp930_search(encoding_name):
             decode=CP930Decoder().decode
         )
 codecs.register(cp930_search)
-
-# import codecs
-# data = b'\xaa\xaa\xaa\xaa'
-# encoded_data = codecs.encode(data, 'hex') 
-# print(encoded_data)
