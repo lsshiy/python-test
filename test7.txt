@@ -1,0 +1,84 @@
+pip install wcwidth
+wcwidth を pyte に統合
+以下は、pyte のスクリーン描画ロジックを拡張してダブルバイト文字を扱えるようにする例です：
+
+python
+コードをコピーする
+import pyte
+from wcwidth import wcwidth
+
+class DoubleWidthScreen(pyte.Screen):
+    def draw(self, data):
+        for char in data:
+            width = wcwidth(char)
+            if width == 2:
+                # ダブルバイト文字の処理
+                self.cursor.data[self.cursor.x] = char
+                self.cursor.data[self.cursor.x + 1] = None  # ダブルバイトは2セルを占有
+                self.cursor.x += 2
+            elif width == 1:
+                # シングルバイト文字の処理
+                self.cursor.data[self.cursor.x] = char
+                self.cursor.x += 1
+            else:
+                # 非表示文字の場合（width == 0）
+                continue
+これで、ダブルバイト文字を適切に表示できるようになります。
+
+2. フォントとセルサイズを考慮する
+仮想端末上のダブルバイト文字はセル幅が2になるため、適切なフォントや端末設定も必要です。以下を確認してください：
+
+フォントがCJK文字を含む。
+ダブルバイト文字のセル幅を考慮した描画を行う。
+3. pyte の処理をカスタマイズ
+既存の pyte モジュールを拡張することで、特定の挙動を修正します。たとえば、スクリーンバッファの扱いを拡張してダブルバイト文字のセル幅を尊重するように変更します。
+
+スクリーンバッファの拡張例
+python
+コードをコピーする
+class ExtendedScreen(pyte.Screen):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def _write(self, char):
+        width = wcwidth(char)
+        if width == 2:
+            # 2セル占有文字の処理
+            super().write(char)
+            self.cursor.x += 1  # ダブルバイトの場合、カーソルをさらに1つ進める
+        else:
+            super().write(char)
+このカスタムクラスを pyte.Screen の代わりに使用します。
+
+4. サーバー側エンコードを確認
+pyte は仮想端末のエミュレータであり、サーバーから送られるデータが正しいエンコード（UTF-8など）で送信されていることが前提です。telnetlib3 や他のクライアントを使用している場合、エンコード設定を確認してください。
+
+例: telnetlib3 のエンコーディングを指定
+python
+コードをコピーする
+import telnetlib3
+
+# telnet接続時にエンコードを指定
+reader, writer = await telnetlib3.open_connection(
+    host='your-host',
+    port=23,
+    encoding='utf-8'  # 適切なエンコードを設定
+)
+5. デバッグ
+もし問題が解決しない場合、以下を確認してください：
+
+サーバーから送られてくるデータが正しいエンコーディングで送信されているか。
+pyte のスクリーンバッファが正しく更新されているか。
+デバッグには以下のコードを使用します：
+
+python
+コードをコピーする
+screen = DoubleWidthScreen(80, 24)
+stream = pyte.Stream(screen)
+
+# サーバーから送られるデータを解析
+data = "テスト表示"
+stream.feed(data)
+
+# スクリーンの内容を確認
+for line in scree
