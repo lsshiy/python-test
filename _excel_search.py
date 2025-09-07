@@ -92,6 +92,7 @@ class ExcelSearcherApp:
         yscroll1.pack(side="right", fill="y")
         self.file_listbox.config(yscrollcommand=yscroll1.set)
         self.file_listbox.bind("<<ListboxSelect>>", self.on_file_select)
+        self.file_listbox.bind("<Double-Button-1>", self.open_selected_file)
 
         left_frame_sub2 = Frame(left_frame)
         left_frame_sub2.pack(side="bottom", fill="x")
@@ -194,6 +195,15 @@ class ExcelSearcherApp:
             self.detail_listbox.insert(END, line)
 
     # ====== 右リストダブルクリックで Excel 開く ======
+    def open_selected_file(self, event=None):
+        sel_file_idx = self.file_listbox.curselection()
+        if not sel_file_idx:
+            return
+        idx = sel_file_idx[0]
+        file_path = self.results[idx]['path']  # files は Listbox に入れたフルパスのリスト
+        print(f"{file_path=}")
+        os.startfile(file_path)  # Windows で標準アプリで開く
+
     def open_selected_detail(self, event=None):
         sel_file_idx = self.file_listbox.curselection()
         sel_detail_idx = self.detail_listbox.curselection()
@@ -284,7 +294,7 @@ class ExcelSearcherApp:
             if self.include_subdirs.get():
                 for rootdir, _, files in os.walk(folder):
                     for i, name in enumerate(files):
-                        self._enqueue("status", f"検索中： {i}/{len(files)} {rootdir}")
+                        self._enqueue("status", f"検索中…： {i}/{len(files)} {rootdir}")
                         ext = os.path.splitext(name)[1].lower()
                         if ext not in (".xlsx", ".xls"):
                             continue
