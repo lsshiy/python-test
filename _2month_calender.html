@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>予定とタスクカレンダー</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr); /* 月〜金 */
+      gap: 0px;
+      margin-bottom: 2rem;
+    }
+    .day {
+      border: 1px solid #ccc;
+      padding: 2px;
+      position: relative;
+      background-color: white;
+    }
+    .day[data-month="8"] {
+      background-color: #fffdf2;
+    }
+    .day[data-month="9"] {
+      background-color: #f2f7ff;
+    }
+    .empty {
+      border: none;
+      background: transparent;
+    }
+    .today {
+      background-color: #cce5ff !important;
+      font-weight: bold;
+      box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+    }
+    .weekday-label {
+      font-weight: bold;
+      text-align: center;
+      background-color: #f8f9fa;
+      padding: 4px;
+      border-radius: 4px;
+      height: 40px;
+      line-height: 32px;
+    }
+    .event-bar {
+      z-index: 100;
+      position: absolute;
+      left: 0;
+      height: 20px;
+      background-color: #0d6efd;
+      color: white;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .section-title {
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.5rem;
+      margin: 0;
+      height: 40px;
+      line-height: 40px;
+    }
+    body {
+      margin-left: 10px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="section-title">予定</div>
+  <div class="calendar" id="calendar-main"></div>
+
+  <div class="section-title">タスク</div>
+  <div class="calendar" id="task-main"></div>
+
+  <script>
+    const weekdays = ['月', '火', '水', '木', '金'];
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    const events = [
+      { title: '出張', start: `${year}-09-10`, end: `${year}-09-13` },
+      { title: '研修', start: `${year}-10-03`, end: `${year}-10-06` },
+      { title: '予定1', start: `${year}-10-14`, end: `${year}-10-31` },
+      { title: '予定1', start: `${year}-10-14`, end: `${year}-10-31` },
+      { title: '予定2', start: `${year}-10-13`, end: `${year}-10-29` }
+    ];
+
+    function createCalendar(startMonth, containerId) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      weekdays.forEach(day => {
+        const label = document.createElement('div');
+        label.className = 'weekday-label';
+        label.innerText = day;
+        container.appendChild(label);
+      });
+
+      const allDays = [];
+
+      for (let m = startMonth; m <= startMonth + 1; m++) {
+        const firstDay = new Date(year, m, 1);
+        const lastDay = new Date(year, m + 1, 0);
+
+        for (let d = 1; d <= lastDay.getDate(); d++) {
+          const date = new Date(year, m, d);
+          const dayOfWeek = date.getDay();
+          if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+          allDays.push(date);
+        }
+      }
+
+      const firstWeekday = allDays[0].getDay();
+      const offset = firstWeekday === 0 ? 0 : firstWeekday - 1;
+      for (let i = 0; i < offset; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'day empty';
+        container.appendChild(empty);
+      }
+
+      const weekCount = countWeeks(allDays);
+      const remainingHeight = window.innerHeight - 40 * 4; // 2 section titles + 2 weekday rows
+      const weekHeight = remainingHeight / weekCount;
+
+      allDays.forEach(date => {
+        const div = document.createElement('div');
+        div.className = 'day';
+        div.setAttribute('data-month', date.getMonth());
+        div.innerText = `${date.getMonth() + 1}/${date.getDate()}`;
+        div.style.height = `${weekHeight}px`;
+
+        if (
+          date.getDate() === today.getDate() &&
+          date.getMonth() === today.getMonth() &&
+          date.getFullYear() === today.getFullYear()
+        ) {
+          div.classList.add('today');
+        }
+
+        container.appendChild(div);
+      });
+
+      return allDays;
+    }
+
+    function countWeeks(dates) {
+      const weeks = new Set();
+      dates.forEach(date => {
+        const monday = getWeekStart(date).toISOString();
+        weeks.add(monday);
+      });
+      return weeks.size;
+    }
+
+    function addEventsToCalendar(daysArray, containerId) {
+  const container = document.getElementById(containerId);
+  const dayDivs = Array.from(container.getElementsByClassName('day')).filter(div => !div.classList.contains('empty'));
+
+  const eventLayers = {}; // 週ごとの重なり管理
+
+  events.forEach(event => {
+    const start = new Date(event.start);
+    const end = new Date(event.end);
+
+    const indices = daysArray
+      .map((date, i) => ({ date, index: i }))
+      .filter(d => d.date >= start && d.date <= end)
+      .map(d => d.index);
+
+    if (indices.length === 0) return;
+
+    let weekGroups = [];
+    let currentWeek = [];
+    let currentWeekStart = getWeekStart(daysArray[indices[0]]);
+
+    indices.forEach(i => {
+      const date = daysArray[i];
+      const weekStart = getWeekStart(date);
+
+      if (weekStart.getTime() !== currentWeekStart.getTime()) {
+        if (currentWeek.length > 0) weekGroups.push(currentWeek);
+        currentWeek = [];
+        currentWeekStart = weekStart;
+      }
+      currentWeek.push(i);
+    });
+    if (currentWeek.length > 0) weekGroups.push(currentWeek);
+
+    weekGroups.forEach(group => {
+      const weekKey = getWeekStart(daysArray[group[0]]).toISOString();
+      const layer = eventLayers[weekKey] = (eventLayers[weekKey] || 0);
+
+      const firstDiv = dayDivs[group[0]];
+      const bar = document.createElement('div');
+      bar.className = 'event-bar';
+      bar.style.bottom = `${4 + layer * 24}px`;
+      bar.style.width = `calc(${group.length} * 100% + ${group.length - 1} * 0px)`;
+      bar.innerText = event.title;
+      firstDiv.appendChild(bar);
+
+      eventLayers[weekKey]++;
+    });
+  });
+}
+
+    function getWeekStart(date) {
+      const day = date.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      const monday = new Date(date);
+      monday.setDate(date.getDate() + diff);
+      monday.setHours(0, 0, 0, 0);
+      return monday;
+    }
+
+    const mainDays = createCalendar(month, 'calendar-main');
+    addEventsToCalendar(mainDays, 'calendar-main');
+
+    const taskDays = createCalendar(month, 'task-main');
+    addEventsToCalendar(taskDays, 'task-main');
+  </script>
+</body>
+</html>
