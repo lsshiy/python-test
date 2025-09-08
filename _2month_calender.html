@@ -14,11 +14,11 @@
       display: grid;
       grid-template-columns: repeat(5, 1fr); /* 月〜金 */
       gap: 0px;
-      margin-bottom: 2rem;
+      /* margin-bottom: 2rem; */
     }
     .day {
       border: 1px solid #ccc;
-      padding: 2px;
+      padding: 0px;
       position: relative;
       background-color: white;
     }
@@ -70,6 +70,14 @@
       margin-left: 10px;
       margin-right: 10px;
     }
+    .day span {
+        padding: 2px;
+        display: block;
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 4px;
+        }
+
   </style>
 </head>
 <body>
@@ -93,6 +101,15 @@
       { title: '予定1', start: `${year}-10-14`, end: `${year}-10-31` },
       { title: '予定2', start: `${year}-10-13`, end: `${year}-10-29` }
     ];
+const eventsMain = [
+  { title: '出張', start: `${year}-09-10`, end: `${year}-09-13` },
+  { title: '研修', start: `${year}-10-03`, end: `${year}-10-06` }
+];
+
+const eventsTask = [
+  { title: '予定1', start: `${year}-10-14`, end: `${year}-10-31` },
+  { title: '予定2', start: `${year}-10-13`, end: `${year}-10-29` }
+];
 
     function createCalendar(startMonth, containerId) {
       const container = document.getElementById(containerId);
@@ -128,26 +145,31 @@
       }
 
       const weekCount = countWeeks(allDays);
-      const remainingHeight = window.innerHeight - 40 * 4; // 2 section titles + 2 weekday rows
+      const remainingHeight = window.innerHeight - 40 * 2; // 2 section titles + 2 weekday rows
+      console.log("rem:"+remainingHeight + " weekcnt:" + weekCount);
       const weekHeight = remainingHeight / weekCount;
 
-      allDays.forEach(date => {
+        allDays.forEach(date => {
         const div = document.createElement('div');
         div.className = 'day';
         div.setAttribute('data-month', date.getMonth());
-        div.innerText = `${date.getMonth() + 1}/${date.getDate()}`;
         div.style.height = `${weekHeight}px`;
 
+        const span = document.createElement('span');
+        span.innerText = `${date.getMonth() + 1}/${date.getDate()}`;
+        div.appendChild(span);
+
         if (
-          date.getDate() === today.getDate() &&
-          date.getMonth() === today.getMonth() &&
-          date.getFullYear() === today.getFullYear()
+            date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear()
         ) {
-          div.classList.add('today');
+            div.classList.add('today');
         }
 
         container.appendChild(div);
-      });
+        });
+
 
       return allDays;
     }
@@ -161,11 +183,11 @@
       return weeks.size;
     }
 
-    function addEventsToCalendar(daysArray, containerId) {
+    function addEventsToCalendar(daysArray, containerId, events) {
   const container = document.getElementById(containerId);
   const dayDivs = Array.from(container.getElementsByClassName('day')).filter(div => !div.classList.contains('empty'));
 
-  const eventLayers = {}; // 週ごとの重なり管理
+  const eventLayers = {};
 
   events.forEach(event => {
     const start = new Date(event.start);
@@ -212,6 +234,7 @@
   });
 }
 
+
     function getWeekStart(date) {
       const day = date.getDay();
       const diff = day === 0 ? -6 : 1 - day;
@@ -221,11 +244,35 @@
       return monday;
     }
 
-    const mainDays = createCalendar(month, 'calendar-main');
-    addEventsToCalendar(mainDays, 'calendar-main');
+const mainDays = createCalendar(month, 'calendar-main');
+addEventsToCalendar(mainDays, 'calendar-main', eventsMain);
 
-    const taskDays = createCalendar(month, 'task-main');
-    addEventsToCalendar(taskDays, 'task-main');
+const taskDays = createCalendar(month, 'task-main');
+addEventsToCalendar(taskDays, 'task-main', eventsTask);
+
+
+    let scrollToggle = false;
+
+    setInterval(() => {
+        const main = document.getElementById('calendar-main');
+        const task = document.getElementById('task-main');
+        const title_height = document.querySelector(".section-title").offsetHeight;
+        const week_height = document.querySelector(".weekday-label").offsetHeight;
+
+        const target = scrollToggle ? main : task;
+        var top = 0;
+        if (target != main) {
+            top = target.getBoundingClientRect().top + title_height + week_height + window.scrollY;
+        }
+
+        window.scrollTo({
+            top: top,
+            behavior: 'smooth'
+        });
+
+        scrollToggle = !scrollToggle;
+    }, 3000);
+
   </script>
 </body>
 </html>
